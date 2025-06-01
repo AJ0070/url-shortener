@@ -13,6 +13,11 @@ app.use(express.static('public'));
 
 // MongoDB connection with enhanced options
 const connectDB = async () => {
+  if (!process.env.MONGODB_URI) {
+    console.error('MONGODB_URI is not defined in environment variables');
+    process.exit(1);
+  }
+
   try {
     await mongoose.connect(process.env.MONGODB_URI, {
       useNewUrlParser: true,
@@ -32,6 +37,10 @@ const connectDB = async () => {
     console.log('MongoDB Connected Successfully');
   } catch (err) {
     console.error('MongoDB Connection Error:', err.message);
+    // Log the full error in development
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('Full error:', err);
+    }
     // Retry connection after a delay
     console.log('Retrying connection in 5 seconds...');
     setTimeout(connectDB, 5000);
@@ -69,8 +78,8 @@ const Url = mongoose.model('Url', urlSchema);
 app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'ok',
-    mongodb:
-      mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+    mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+    environment: process.env.NODE_ENV || 'development',
   });
 });
 
@@ -78,6 +87,10 @@ app.get('/health', (req, res) => {
 app.post('/api/shorten', async (req, res) => {
   const { url } = req.body;
   try {
+    if (!url) {
+      return res.status(400).json({ error: 'URL is required' });
+    }
+
     const shortUrl = shortid.generate();
     const newUrl = new Url({
       originalUrl: url,
@@ -118,4 +131,25 @@ app.get('/:shortUrl', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+const server = app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log('Environment:', process.env.NODE_ENV || 'development');
+});
+
+// Handle server shutdown
+process.on('SIGTERM', () => {
+  console.log('Received SIGTERM. Performing graceful shutdown...');
+  server.close(() => {
+    console.log('Server closed. Disconnecting from MongoDB...');
+    mongoose.connection.close(false, () => {
+      console.log('MongoDB connection closed.');
+      process.exit(0);
+    });
+  });
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  process.exit(1);
+});
