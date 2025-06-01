@@ -2,6 +2,9 @@
 
 A beautiful URL shortener with a glassmorphism UI and dark theme, built with Node.js, Express, and MongoDB.
 
+## Live Demo
+The application is live at: [https://url-shortener-3fm9.onrender.com/](https://url-shortener-3fm9.onrender.com/)
+
 ## Features
 
 - Modern glassmorphism UI design
@@ -34,7 +37,7 @@ npm install
 3. Create a `.env` file in the root directory:
 ```env
 PORT=3000
-MONGODB_URI=mongodb://localhost/urlshortener
+MONGODB_URI=your_mongodb_connection_string
 ```
 
 4. Start MongoDB service on your machine
@@ -68,6 +71,10 @@ The application will be available at `http://localhost:3000`
 - HTML5
 - CSS3 (with modern features)
 - Vanilla JavaScript
+
+## Deployment
+
+The application is deployed on [Render](https://render.com) with MongoDB Atlas as the database service.
 
 ## License
 
