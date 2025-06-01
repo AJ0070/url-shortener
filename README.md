@@ -3,6 +3,7 @@
 A beautiful URL shortener with a glassmorphism UI and dark theme, built with Node.js, Express, and MongoDB.
 
 ## Live Demo
+
 The application is live at: [https://url-shortener-3fm9.onrender.com/](https://url-shortener-3fm9.onrender.com/)
 
 ## Features
@@ -24,17 +25,20 @@ The application is live at: [https://url-shortener-3fm9.onrender.com/](https://u
 ## Installation
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/AJ0070/url-shortener.git
 cd url-shortener
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Create a `.env` file in the root directory:
+
 ```env
 PORT=3000
 MONGODB_URI=your_mongodb_connection_string
@@ -43,6 +47,7 @@ MONGODB_URI=your_mongodb_connection_string
 4. Start MongoDB service on your machine
 
 5. Run the application:
+
 ```bash
 npm run dev
 ```
@@ -78,4 +83,4 @@ The application is deployed on [Render](https://render.com) with MongoDB Atlas a
 
 ## License
 
-MIT 
+MIT
