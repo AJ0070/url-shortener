@@ -18,13 +18,23 @@ const connectDB = async () => {
         await mongoose.connect(process.env.MONGODB_URI, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
-            serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
-            socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
+            serverSelectionTimeoutMS: 5000,
+            socketTimeoutMS: 45000,
+            ssl: true,
+            sslValidate: true,
+            retryWrites: true,
+            w: 'majority',
+            retryReads: true,
+            maxPoolSize: 10,
+            minPoolSize: 5,
+            maxIdleTimeMS: 120000,
+            connectTimeoutMS: 10000,
         });
         console.log('MongoDB Connected Successfully');
     } catch (err) {
         console.error('MongoDB Connection Error:', err.message);
-        // Retry connection
+        // Retry connection after a delay
+        console.log('Retrying connection in 5 seconds...');
         setTimeout(connectDB, 5000);
     }
 };
@@ -39,7 +49,11 @@ mongoose.connection.on('error', err => {
 
 mongoose.connection.on('disconnected', () => {
     console.log('MongoDB Disconnected. Attempting to reconnect...');
-    connectDB();
+    setTimeout(connectDB, 5000);
+});
+
+mongoose.connection.on('connected', () => {
+    console.log('MongoDB Connected');
 });
 
 // URL Schema
@@ -51,6 +65,14 @@ const urlSchema = new mongoose.Schema({
 });
 
 const Url = mongoose.model('Url', urlSchema);
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.status(200).json({ 
+        status: 'ok',
+        mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+    });
+});
 
 // Routes
 app.post('/api/shorten', async (req, res) => {
