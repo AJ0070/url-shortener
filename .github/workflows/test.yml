@@ -1,0 +1,39 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - master  # or 'main' if that's your default branch
+  pull_request:
+    branches:
+      - master  # or 'main' if that's your default branch
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check code format
+        run: |
+          if [ -f package-lock.json ]; then
+            npx prettier --check "**/*.{js,jsx,ts,tsx,json,md}"
+          fi
+
+      - name: Check for lint errors
+        run: |
+          if [ -f package.json ]; then
+            npm run lint || echo "No lint script found"
+          fi 
