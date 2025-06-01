@@ -12,12 +12,35 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// MongoDB connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/urlshortener', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}).then(() => console.log('MongoDB Connected'))
-  .catch(err => console.error('MongoDB Connection Error:', err));
+// MongoDB connection with enhanced options
+const connectDB = async () => {
+    try {
+        await mongoose.connect(process.env.MONGODB_URI, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+            serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+            socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
+        });
+        console.log('MongoDB Connected Successfully');
+    } catch (err) {
+        console.error('MongoDB Connection Error:', err.message);
+        // Retry connection
+        setTimeout(connectDB, 5000);
+    }
+};
+
+// Initial connection
+connectDB();
+
+// Handle connection errors
+mongoose.connection.on('error', err => {
+    console.error('MongoDB Connection Error:', err.message);
+});
+
+mongoose.connection.on('disconnected', () => {
+    console.log('MongoDB Disconnected. Attempting to reconnect...');
+    connectDB();
+});
 
 // URL Schema
 const urlSchema = new mongoose.Schema({
@@ -41,6 +64,7 @@ app.post('/api/shorten', async (req, res) => {
         await newUrl.save();
         res.json(newUrl);
     } catch (err) {
+        console.error('Error in /api/shorten:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });
@@ -50,6 +74,7 @@ app.get('/api/urls', async (req, res) => {
         const urls = await Url.find().sort({ createdAt: -1 });
         res.json(urls);
     } catch (err) {
+        console.error('Error in /api/urls:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });
@@ -65,6 +90,7 @@ app.get('/:shortUrl', async (req, res) => {
             res.status(404).json({ error: 'URL not found' });
         }
     } catch (err) {
+        console.error('Error in /:shortUrl:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });
