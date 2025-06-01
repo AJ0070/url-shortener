@@ -13,7 +13,7 @@ app.use(express.json());
 app.use(express.static('public'));
 
 // MongoDB connection
-mongoose.connect('mongodb://localhost/urlshortener', {
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/urlshortener', {
     useNewUrlParser: true,
     useUnifiedTopology: true
 }).then(() => console.log('MongoDB Connected'))
