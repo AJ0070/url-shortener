@@ -22,7 +22,7 @@ A beautiful URL shortener with a glassmorphism UI and dark theme, built with Nod
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/AJ0070/url-shortener.git
 cd url-shortener
 ```
 
